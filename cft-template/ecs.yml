@@ -1,0 +1,51 @@
+AWSTempalteFormatVersion: 2010-09-09
+Description: this template is to create alb and its compenents
+
+Resources:
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: ecs-test
+
+  ECSService:
+    Type: AWS::ECS::Service
+    Properties: 
+      Cluster: !Ref ECSCluster
+      DesiredCount: 3
+      LaunchType: EC2
+      LoadBalancers: !Ref LoadBalancer
+      NetworkConfiguration: AwsVpcConfiguration
+      PlacementStrategies: 
+        - Type: spread
+      Role: ecs-alb-role
+      SchedulingStrategy: REPLICA
+      ServiceArn: String
+      ServiceName: String
+      ServiceRegistries: 
+        - ServiceRegistry
+  TaskDefinition: String
+
+TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties: 
+      ContainerDefinitions: 
+        - ContainerDefinition
+      ExecutionRoleArn: ecs-iam-role
+      Family: test
+      InferenceAccelerators: 
+        -   DeviceName: String
+        -   DeviceType: String
+      IpcMode: task
+      NetworkMode: host
+      PidMode: task
+      PlacementConstraints: TaskDefinitionPlacementConstraint
+      ProxyConfiguration: 
+        ProxyConfiguration
+      RequiresCompatibilities: EC2
+      TaskRoleArn: ec2-ecs-role
+
+Outputs:
+  Cluster:
+    Description: A reference to the ECS cluster
+    Value: !Ref ECSCluster
+
