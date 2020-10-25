@@ -62,11 +62,12 @@ Resources:
         Type: AWS::EC2::EIP
         Properties:
             Domain: !Ref 'VPC'
-
+# NAT gw for each private subnets to make connection to internet
   NatGatewayOne:
     Type: AWS::EC2::NatGateway
       Properties:
         AllocationId: !GetAtt NatGatewayOneAttachment.AllocationId
+        SubnetId: !Ref PrivateSubnetOne
       Tags: 
         - Key: Name
           Value: NatGatewayOne
