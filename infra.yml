@@ -1,0 +1,118 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: This stack is used to provision the VPC network resources includes Subnet,sg, Gateway,etc..
+
+#A stack for deploying containerized applications onto a cluster of EC2
+#hosts using Elastic Container Service. This stack runs containers on
+#hosts that are in a private VPC subnet. Outbound network traffic from the
+#hosts must go out through a NAT gateway. There are two load balancers, one
+#inside the public subnet, which can be used to send traffic to the
+#containers in the private subnet, and one in the private subnet, which can
+#be used for private internal traffic between internal services.
+
+Parameters:
+  VPC: 
+    Type: String
+    Default: 'vpc-68beff0f'
+    Description: Default VPC ID
+  PublicSubnetOne: 
+    Type: String
+    Default: 'subnet-aeb2cccb'
+    Description: public subnet on us-east-1a
+  PublicSubnetTwo: 
+    Type: String
+    Default: 'subnet-01cdd22b'
+    Description: public subnet on us-east-1b
+
+Resources:
+  PrivateSubnetOne:
+    Type: AWS::EC2::Subnet
+      Properties:
+        CidrBlock: 10.0.0.0/24
+        MapPublicIpOnLaunch: true
+          - Key: Name
+            Value: PrivateSubnetOne
+        VpcId: !Ref 'VPC'
+
+  PrivateSubnetTwo:
+    Type: AWS::EC2::Subnet
+      Properties:
+        CidrBlock: 10.0.1.0/24
+        MapPublicIpOnLaunch: true
+        Tags: 
+          - Key: Name
+            Value: PrivateSubnetTwo
+        VpcId: !Ref 'VPC'
+
+  # Setup networking resources for the private subnets. Containers
+  # in these subnets have only private IP addresses, and must use a NAT
+  # gateway to talk to the internet. We launch two NAT gateways, one for
+  # each private subnet.
+
+  # Default Internet Gateway
+  # 1. Used default internet Gateway
+  # 2. Checked that GW is attached to VPC
+  # 3. Checked route table and I manually associated the 2 public subnets with route tables
+
+  # Below components are created for the GW for the private subnets
+  NatGatewayOneAttachment:
+    Type: AWS::EC2::EIP
+      Properties:
+            Domain: !Ref 'VPC'
+      NatGatewayTwoAttachment:
+        Type: AWS::EC2::EIP
+        Properties:
+            Domain: !Ref 'VPC'
+
+  NatGatewayOne:
+    Type: AWS::EC2::NatGateway
+      Properties:
+        AllocationId: !GetAtt NatGatewayOneAttachment.AllocationId
+      Tags: 
+        - Key: Name
+          Value: NatGatewayOne
+  NatGatewayTwo:
+    Type: AWS::EC2::NatGateway
+      Properties:
+        AllocationId: !GetAtt NatGatewayTwoAttachment.AllocationId
+        SubnetId: !Ref PublicSubnetTwo
+      Tags: 
+        - Key: Name
+          Value: NatGatewayTwo
+
+  PrivateRouteTableOne:
+    Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId: !Ref 'VPC'
+        Tags: 
+          - Key: Name
+            Value: PrivateRouteTableOne
+  PrivateRouteOne:
+    Type: AWS::EC2::Route
+      Properties:
+        RouteTableId: !Ref PrivateRouteTableOne
+        DestinationCidrBlock: 0.0.0.0/0
+        NatGatewayId: !Ref NatGatewayOne
+  PrivateRouteTableOneAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        RouteTableId: !Ref PrivateRouteTableOne
+        SubnetId: !Ref PrivateSubnetOne
+
+  PrivateRouteTableTwo:
+    Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId: !Ref 'VPC'
+        Tags: 
+        - Key: Name
+          Value: PrivateRouteTableTwo
+  PrivateRouteTwo:
+    Type: AWS::EC2::Route
+      Properties:
+        RouteTableId: !Ref PrivateRouteTableTwo
+        DestinationCidrBlock: 0.0.0.0/0
+        NatGatewayId: !Ref NatGatewayTwo
+  PrivateRouteTableTwoAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        RouteTableId: !Ref PrivateRouteTableTwo
+        SubnetId: !Ref PrivateSubnetTwo
