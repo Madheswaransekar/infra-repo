@@ -27,7 +27,7 @@ Resources:
   PrivateSubnetOne:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: 1172.31.1.0/24
+      CidrBlock: 172.31.1.0/24
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
