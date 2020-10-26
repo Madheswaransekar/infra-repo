@@ -1,6 +1,13 @@
 # infra-repo
 
+# Jenkins Server:
 
+For this task, I have provisioned Amazon Linux AMI and install Jenkins and its pre-requistions. 
+
+Please refer the Instruction file for installation details.
+https://github.com/Madheswaransekar/infra-repo/blob/main/Instruction
+
+# infra.yml : (Cloudformation template used to provision the basci netwrok resource as one time activity)
 
 <img width="1020" alt="Screen Shot 2020-10-26 at 7 20 57 AM" src="https://user-images.githubusercontent.com/72896901/97167083-9c33c280-175c-11eb-9287-beb7d46840dc.png">
 
