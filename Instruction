@@ -1,0 +1,46 @@
+Install Jenkins:
+================
+https://medium.com/@mohan08p/install-and-configure-jenkins-on-amazon-ami-8617f0816444
+1. Launch first linux ami ec2 instance
+2. Pre-requistions:
+    Sg(ssh/port 8080 enabled), key pair, vpc.
+    Install java and verify the version:
+    Yum install -y
+    java -version
+3. Install Jenkins:
+        Download the jenkins pacakge and select redhat stable https://pkg.jenkins.io/ 
+        Jenkins Redhat Packages
+        To use this repository, run the following command to install jenkins
+        yum install jenkins -y (Install jenkins)
+        systemctl start jenkins (start jenkins)
+        systemctl start jenkins (enable jenkins on the boot time)
+        systemctl status jenkins 
+4. basci jenkins configuration:
+    browse public IP with jenkins port 8080 and setup the jenkins admin with secret key.
+    /var/lib/jenkins/secrets/initialAdminPassword
+
+    http://54.86.134.230:8080/
+    username : admin
+    pwd : admin
+
+CFT plugins:
+============
+1. Click Manage Jenkins--> Manage plugins-->Available--> Search "cloudformation"--> select jenkins-cloudformation-plugin
+2. Click "Install without restart" --> select "Restart jenkins when install complete"
+
+Source Code Mangement:
+1. GIT
+    Update the repo URL and add the credentials
+Build Environment:
+Click :"Create AWS Cloud Formation stack"
+    Stack configuration
+ 	AWS Region	- US East (Northern Virginia) Region
+ 	Cloud Formation recipe file/S3 URL. (.json)	 - infra.yml
+ 	Stack name	- cft-infra
+    AWS Access and secret key
+Save it.
+
+Fixes :
+Manage Jenkins-->Global Tool Configuration : Update "Path to Git executable"  to /bin/git
+keep Branch Specifier as blank in SCM under build configure
+

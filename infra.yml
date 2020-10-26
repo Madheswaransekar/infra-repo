@@ -26,22 +26,22 @@ Parameters:
 Resources:
   PrivateSubnetOne:
     Type: AWS::EC2::Subnet
-      Properties:
-        CidrBlock: 10.0.0.0/24
-        MapPublicIpOnLaunch: true
-          - Key: Name
-            Value: PrivateSubnetOne
-        VpcId: !Ref 'VPC'
-
+    Properties:
+      CidrBlock: 10.0.0.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: PrivateSubnetOne
+      VpcId: !Ref 'VPC'
   PrivateSubnetTwo:
     Type: AWS::EC2::Subnet
-      Properties:
-        CidrBlock: 10.0.1.0/24
-        MapPublicIpOnLaunch: true
-        Tags: 
-          - Key: Name
-            Value: PrivateSubnetTwo
-        VpcId: !Ref 'VPC'
+    Properties:
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: true
+      Tags: 
+        - Key: Name
+          Value: PrivateSubnetTwo
+      VpcId: !Ref 'VPC'
 
   # Setup networking resources for the private subnets. Containers
   # in these subnets have only private IP addresses, and must use a NAT
@@ -56,64 +56,78 @@ Resources:
   # Below components are created for the GW for the private subnets
   NatGatewayOneAttachment:
     Type: AWS::EC2::EIP
-      Properties:
-            Domain: !Ref 'VPC'
-      NatGatewayTwoAttachment:
-        Type: AWS::EC2::EIP
-        Properties:
-            Domain: !Ref 'VPC'
+    Properties:
+      Domain: !Ref 'VPC'
+  NatGatewayTwoAttachment:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: !Ref 'VPC'
 # NAT gw for each private subnets to make connection to internet
   NatGatewayOne:
     Type: AWS::EC2::NatGateway
-      Properties:
-        AllocationId: !GetAtt NatGatewayOneAttachment.AllocationId
-        SubnetId: !Ref PrivateSubnetOne
+    Properties:
+      AllocationId: !GetAtt NatGatewayOneAttachment.AllocationId
+      SubnetId: !Ref PrivateSubnetOne
       Tags: 
         - Key: Name
           Value: NatGatewayOne
   NatGatewayTwo:
     Type: AWS::EC2::NatGateway
-      Properties:
-        AllocationId: !GetAtt NatGatewayTwoAttachment.AllocationId
-        SubnetId: !Ref PublicSubnetTwo
+    Properties:
+      AllocationId: !GetAtt NatGatewayTwoAttachment.AllocationId
+      SubnetId: !Ref PublicSubnetTwo
       Tags: 
         - Key: Name
           Value: NatGatewayTwo
 
   PrivateRouteTableOne:
     Type: AWS::EC2::RouteTable
-      Properties:
-        VpcId: !Ref 'VPC'
-        Tags: 
-          - Key: Name
-            Value: PrivateRouteTableOne
+    Properties:
+      VpcId: !Ref 'VPC'
+      Tags: 
+        - Key: Name
+          Value: PrivateRouteTableOne
   PrivateRouteOne:
     Type: AWS::EC2::Route
-      Properties:
-        RouteTableId: !Ref PrivateRouteTableOne
-        DestinationCidrBlock: 0.0.0.0/0
-        NatGatewayId: !Ref NatGatewayOne
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableOne
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayOne
   PrivateRouteTableOneAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
-      Properties:
-        RouteTableId: !Ref PrivateRouteTableOne
-        SubnetId: !Ref PrivateSubnetOne
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableOne
+      SubnetId: !Ref PrivateSubnetOne
 
   PrivateRouteTableTwo:
     Type: AWS::EC2::RouteTable
-      Properties:
-        VpcId: !Ref 'VPC'
-        Tags: 
+    Properties:
+      VpcId: !Ref 'VPC'
+      Tags: 
         - Key: Name
           Value: PrivateRouteTableTwo
   PrivateRouteTwo:
     Type: AWS::EC2::Route
-      Properties:
-        RouteTableId: !Ref PrivateRouteTableTwo
-        DestinationCidrBlock: 0.0.0.0/0
-        NatGatewayId: !Ref NatGatewayTwo
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableTwo
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayTwo
   PrivateRouteTableTwoAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
-      Properties:
-        RouteTableId: !Ref PrivateRouteTableTwo
-        SubnetId: !Ref PrivateSubnetTwo
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableTwo
+      SubnetId: !Ref PrivateSubnetTwo
+
+# Below are the output resources by the cloudformation template
+
+Outputs:
+  PrivateSubnetOne:
+    Description: Private subnet one
+    Value: !Ref 'PrivateSubnetOne'
+    Export:
+        Name: !Join [ ':', [ !Ref 'AWS::StackName', 'PrivateSubnetOne' ] ]
+  PrivateSubnetTwo:
+    Description: Private subnet two
+    Value: !Ref 'PrivateSubnetTwo'
+    Export:
+        Name: !Join [ ':', [ !Ref 'AWS::StackName', 'PrivateSubnetTwo' ] ]
