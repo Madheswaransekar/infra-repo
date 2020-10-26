@@ -1,5 +1,10 @@
 # infra-repo
 
+
+
+<img width="1020" alt="Screen Shot 2020-10-26 at 7 20 57 AM" src="https://user-images.githubusercontent.com/72896901/97167083-9c33c280-175c-11eb-9287-beb7d46840dc.png">
+
+
 A GIT repo to create Infrastructure provisioning using Cloudformation templates. T
 This repo have the list of required infrastructure components as nested stack in 2AZs to deploy an application in ECS cluster.
 
