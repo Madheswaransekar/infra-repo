@@ -19,7 +19,8 @@ https://github.com/Madheswaransekar/infra-repo/blob/main/infra.yml
 
 I have proposed the below architecture to deploy our container application in AWS ECS Cluster in Private subnet.
 
-<img width="1020" alt="Screen Shot 2020-10-26 at 7 20 57 AM" src="https://user-images.githubusercontent.com/72896901/97167083-9c33c280-175c-11eb-9287-beb7d46840dc.png">
+<img width="958" alt="Screen Shot 2020-10-27 at 6 54 10 AM" src="https://user-images.githubusercontent.com/72896901/97292177-4aa13b80-1821-11eb-8a73-02d8443ef4ca.png">
+
 
 # Completed List:
 1. Jenkins Installation and public access
