@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: This stack is used to provision the security group required by the entire stack.
+
+Parameters:
+  VPC: 
+    Type: String
+    Default: 'vpc-68beff0f'
+    Description: Default VPC ID
+
+Resources:
+  # This sg is allowed to acces 
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      VpcId: !Ref VPC
+      GroupDescription: Access to the load balancer that sits in front of ECS
+      SecurityGroupIngress:
+      # Allow access from anywhere to our ECS services
+        - CidrIp: 0.0.0.0/0
+          #Use -1 to specify all protocols. When authorizing security group rules, specifying -1 or a protocol number other than tcp, udp, icmp, or icmpv6 allows
+          IpProtocol: -1
+      Tags: 
+        - Key: Name
+          Value: sg-LoadBalancers
+
+  ECSHostSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      VpcId: !Ref VPC
+      GroupDescription: Access to the ECS hosts and the tasks/containers that run on them
+      SecurityGroupIngress:
+        # Only allow inbound access to ECS from the ELB
+        - SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup 
+          IpProtocol: -1
+      Tags: 
+        - Key: Name
+          Value: sg-ECS-Hosts
+
+  #declare SecurityGroupIngress and ecurityGroupEgress, attaching them to the SecurityGroup.
+  #SecurityGroupIngressMySSH:
+    #Type: AWS::EC2::SecurityGroupIngress
+    #Properties:
+        #Description: "Allow SSH connections from MyIp"
+        #GroupId: !Ref ECSHostSecurityGroup
+        #CidrIp: 0.0.0.0/0
+        #IpProtocol: tcp
+        #FromPort: 22
+        #ToPort: 22
+
+#SecurityGroupIngressHTTP:
+    #Type: AWS::EC2::SecurityGroupIngress
+    #Properties:
+        #Description: "Allow HTTP inbound traffic"
+        #GroupId: !Ref ECSHostSecurityGroup
+        #CidrIp: 0.0.0.0/0
+        #IpProtocol: tcp
+        #FromPort: 80
+        #ToPort: 80
+
+#SecurityGroupEgress:
+    #Type: AWS::EC2::SecurityGroupEgress
+   # Properties:
+        #Description: "Allow all outbound traffic"
+        #GroupId: !Ref ECSHostSecurityGroup
+        #CidrIp: 0.0.0.0/0  
+        #IpProtocol: tcp
+        #FromPort: 80
+        #ToPort: 80
+
+Outputs:
+
+    ECSHostSecurityGroup: 
+        Description: A reference to the security group for ECS hosts
+        Value: !Ref ECSHostSecurityGroup
+
+    LoadBalancerSecurityGroup:
+        Description: A reference to the security group for load balancers
+        Value: !Ref LoadBalancerSecurityGroup
