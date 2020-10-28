@@ -1,0 +1,86 @@
+# This template is not used. As I used single template to provision alb and ecs cluster.
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deploy a service into an ECS cluster behind a private load balancer.
+Parameters:
+  VPC: 
+    Type: String
+    Default: 'vpc-68beff0f'
+    Description: Default VPC ID
+  #ImageUrl:
+    #Type: String
+    #Default: nginx
+    #Description: The url of a docker image that contains the application process that will handle the traffic for this service
+  #ContainerCpu:
+    #Type: Number
+    #Default: 256
+    #Description: How much CPU to give the container. 1024 is 1 CPU
+  #ContainerMemory:
+    #Type: Number
+    #Default: 512
+    #Description: How much memory in megabytes to give the container
+Resources:
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: microservice-cluster
+# Task definition. Its metadata description about container
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: ecs-service
+      Cpu: 256
+      Memory: 512
+      ContainerDefinitions:
+        - Name: ecs-service
+          Cpu: 256
+          Memory: 512
+          Image: microservice
+          PortMappings:
+            - ContainerPort: 80
+
+  Service:
+    Type: AWS::ECS::Service
+    DependsOn: LoadBalancerRule
+    Properties:
+      ServiceName: ecs-service
+      Cluster: ECSCluster
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 75
+      DesiredCount: 2
+      TaskDefinition: !Ref 'TaskDefinition'
+      LoadBalancers:
+        - ContainerName: ecs-service
+          ContainerPort: 80
+          TargetGroupArn: !Ref 'TargetGroup'
+
+  # This is not default tg. This is used for keeping track of all the tasks, and it automatically connect to alb to route traffic to task
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Name: ecs-service
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref VPC
+
+  # rule on the load balancer for routing traffic to the target group
+  LoadBalancerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref 'TargetGroup'
+          Type: 'forward'
+      Conditions:
+        - Field: path-pattern
+          Values: [!Ref 'Path']
+      ListenerArn:
+        Fn::ImportValue:
+          !Join [':', [!Ref 'StackName', 'PrivateListener']]
+      Priority: !Ref 'Priority'

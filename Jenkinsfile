@@ -7,4 +7,11 @@ pipeline {
             }
         }
     }
+    stages {
+        stage('alb-ecs-create-stack') {
+            steps {
+                sh "aws cloudformation create-stack --stack-name alb-ecs-stack --template-body file://alb-ecs.yml --region 'us-east-1'"
+            }
+        }
+    }
 }

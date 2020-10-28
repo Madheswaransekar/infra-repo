@@ -1,0 +1,128 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: This stack is used to provision the ALB and ecs cluster
+
+Parameters:
+  VPC: 
+    Type: String
+    Default: 'vpc-68beff0f'
+    Description: Default VPC ID
+  sgLoadBalancers: 
+    Type: String
+    Default: 'sg-0b0545f1f95010116'
+    Description: LoadBalancerSecurityGroup
+  PublicSubnetOne: 
+    Type: String
+    Default: 'subnet-aeb2cccb'
+    Description: public subnet on us-east-1a
+  PublicSubnetTwo: 
+    Type: String
+    Default: 'subnet-01cdd22b'
+    Description: public subnet on us-east-1b
+  Path:
+    Type: String
+    Default: "*"
+    Description: A path on the public load balancer that this service
+                 should be connected to. Use * to send all load balancer
+                 traffic to this service.
+
+Resources:
+
+  # This is a public facing load balancer, this is used for accepting traffic from the public
+  # internet and directing it to public facing microservices
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: public-alb
+      Subnets: 
+        - !Ref PublicSubnetOne
+        - !Ref PublicSubnetTwo
+      SecurityGroups: 
+        - !Ref sgLoadBalancers
+      Tags: 
+        - Key: Name
+          Value: public-alb
+    # This is a default target group here, as this is a mandatory Parameters when creating an Application Load Balancer Listener. 
+    # This is not used, instead a target group is created per-service in each service template (../services/*)
+  DefaultTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: default-targetgroup
+      VpcId: !Ref VPC
+      Port: 80
+      Protocol: HTTP
+        
+  LoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    DependsOn:
+      - LoadBalancer
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 443
+      Protocol: HTTP
+      DefaultActions: 
+        - Type: forward
+          TargetGroupArn: !Ref DefaultTargetGroup
+
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: microservice-cluster
+# Task definition. Its metadata description about container
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: ecs-service
+      Cpu: 256
+      Memory: 512
+      ContainerDefinitions:
+        - Name: ecs-service
+          Cpu: 256
+          Memory: 512
+          Image: microservice
+          PortMappings:
+            - ContainerPort: 80
+
+#  Service:
+#   Type: AWS::ECS::Service
+#    DependsOn: LoadBalancerListener
+#    Properties:
+#      ServiceName: ecs-service
+#     Cluster: ECSCluster
+#      DeploymentConfiguration:
+#        MaximumPercent: 200
+#       MinimumHealthyPercent: 75
+#      DesiredCount: 2
+#      TaskDefinition: !Ref 'TaskDefinition'
+#      LoadBalancers:
+#        - ContainerName: ecs-service
+#          ContainerPort: 80
+#          TargetGroupArn: !Ref 'TargetGroup'
+
+  # This is not default tg. This is used for keeping track of all the tasks, and it automatically connect to alb to route traffic to task
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Name: ecs-service
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref VPC
+
+  # rule on the load balancer for routing traffic to the target group
+  LoadBalancerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref 'TargetGroup'
+          Type: 'forward'
+      Conditions:
+        - Field: path-pattern
+          Values: [!Ref 'Path']
+      ListenerArn: !Ref LoadBalancerListener
+      # priority only applies if you have multiple services
+      Priority: 1
