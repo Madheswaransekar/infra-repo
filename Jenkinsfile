@@ -6,6 +6,11 @@ pipeline {
                 sh "aws cloudformation create-stack --stack-name sg-stack --template-body file://sg.yml --region 'us-east-1'"
             }
         }
+        stage('wait for sg stack creation complete') {
+            steps {
+                sh 'sleep 60'
+            }
+        }
         stage('alb-ecs-create-stack') {
             steps {
                 sh "aws cloudformation create-stack --stack-name alb-ecs-stack --template-body file://alb-ecs.yml --region 'us-east-1'"
