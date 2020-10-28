@@ -51,3 +51,14 @@ keep Branch Specifier as blank in SCM under build configure
 sg-stack:
 configure-->Branches to build as "*/*"
 
+Reference:
+==========
+
+https://www.youtube.com/watch?v=XnRqGMSCQyY
+
+AWS Labs ECS :
+https://github.com/awslabs/aws-cloudformation-templates/tree/master/aws/services/ECS
+https://github.com/awslabs/aws-cloudformation-templates/blob/master/aws/services/ECS/EC2LaunchType/clusters/private-vpc.yml
+
+Another ECS reference:
+https://github.com/Kong/jenkins-infrastructure

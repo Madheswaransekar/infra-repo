@@ -1,0 +1,22 @@
+[
+    {
+      "ParameterKey": "VPC",
+      "ParameterValue": "vpc-68beff0f"
+    }, 
+    {
+      "ParameterKey": "sgLoadBalancers",
+      "ParameterValue": "sg-076e42edadab9c042"
+    },
+    {
+      "ParameterKey": "PublicSubnetOne",
+      "ParameterValue": "subnet-aeb2cccb"
+    },
+    {
+      "ParameterKey": "PublicSubnetTwo",
+      "ParameterValue": "subnet-01cdd22b"
+    },
+    {
+      "ParameterKey": "Path",
+      "ParameterValue": "*"
+    }
+]
