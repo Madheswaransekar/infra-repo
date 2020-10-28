@@ -44,7 +44,10 @@ Click :"Create AWS Cloud Formation stack"
     AWS Access and secret key
 Save it.
 
-Fixes :
+Fixes/Learnings:
 Manage Jenkins-->Global Tool Configuration : Update "Path to Git executable"  to /bin/git
 keep Branch Specifier as blank in SCM under build configure
+
+sg-stack:
+configure-->Branches to build as "*/*"
 
