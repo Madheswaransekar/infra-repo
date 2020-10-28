@@ -25,7 +25,7 @@ https://medium.com/@mohan08p/install-and-configure-jenkins-on-amazon-ami-8617f08
 
 IAM Role:
 =========
-jenkins-ec2-role : I created this role with s3,cft & Cloudwatch full access as it need ec2 role access to execute cli command to access these aws resources.
+jenkins-ec2-role : I created this role with ec2,s3,cft & Cloudwatch full access as it need ec2 role access to execute cli command to access these aws resources.
 
 CFT plugins:
 ============
