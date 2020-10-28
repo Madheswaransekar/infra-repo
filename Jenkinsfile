@@ -6,8 +6,6 @@ pipeline {
                 sh "aws cloudformation create-stack --stack-name sg-stack --template-body file://sg.yml --region 'us-east-1'"
             }
         }
-    }
-    stages {
         stage('alb-ecs-create-stack') {
             steps {
                 sh "aws cloudformation create-stack --stack-name alb-ecs-stack --template-body file://alb-ecs.yml --region 'us-east-1'"
